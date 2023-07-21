@@ -1,9 +1,15 @@
 package nl.sander.apples;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+
+import java.io.FileOutputStream;
 import java.util.Map;
 
 public class Apples {
     private final static Map<Character, String> CHAR_ESCAPES = Map.of('\t', "\\t", '\b', "\\b", '\n', "\\n", '\r', "\\r", '\f', "\\f", '\\', "\\\\");
+
+    private static final ByteClassLoader generatedClassesLoader = new ByteClassLoader();
 
     public static Result compare(Object left, Object right) {
         if (left == null) {
@@ -22,7 +28,27 @@ public class Apples {
             return Result.unequal(asString(left) + " != " + asString(right));
         }
 
-        return Result.SAME;
+        if (left instanceof String) {
+            return Result.from(left.equals(right), () -> asString(left) + " != " + asString(right));
+        }
+        try {
+            ClassReader cr = new ClassReader(left.getClass().getName());
+            AppleFactory appleFactory = new AppleFactory();
+            cr.accept(appleFactory, ClassReader.SKIP_FRAMES);
+            ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES );
+
+            appleFactory.classNode.accept(classWriter);
+            byte[] byteArray = classWriter.toByteArray();
+
+            try (FileOutputStream f = new FileOutputStream("B.class")) {
+                f.write(byteArray);
+            }
+            generatedClassesLoader.addClass(appleFactory.classNode.name, byteArray);
+            BaseApple apple = (BaseApple) generatedClassesLoader.loadClass(appleFactory.classNode.name).getConstructor().newInstance();
+            return apple.compare(left, right);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static Result compare(long left, long right) {
