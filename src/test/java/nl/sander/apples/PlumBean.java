@@ -2,6 +2,7 @@ package nl.sander.apples;
 
 import java.util.List;
 
+@SuppressWarnings("unused") // used by generated code
 public class PlumBean {
     private final String core;
     private final String peel;
