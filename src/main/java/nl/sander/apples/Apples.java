@@ -14,53 +14,53 @@ public class Apples {
 
     private static final ByteClassLoader generatedClassesLoader = new ByteClassLoader();
 
-    public static Result compare(Object left, Object right) {
-        return compare("", left, right);
+    public static Result compare(Object apple, Object orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, Object left, Object right) {
-        if (left == null) {
-            return Result.from(property, right == null, "null != " + asString(right));
+    public static Result compare(String property, Object apple, Object orange) {
+        if (apple == null) {
+            return Result.from(property, orange == null, "null != " + asString(orange));
         }
 
-        if (right == null) {
-            return Result.unequal(property, asString(left) + " != null");
+        if (orange == null) {
+            return Result.unequal(property, asString(apple) + " != null");
         }
 
-        if (left == right) {
+        if (apple == orange) {
             return Result.SAME;
         }
 
-        if (left.getClass() != right.getClass()) {
-            return Result.unequal(property, asString(left) + " != " + asString(right));
+        if (apple.getClass() != orange.getClass()) {
+            return Result.unequal(property, asString(apple) + " != " + asString(orange));
         }
 
-        if (left instanceof String) {
-            return Result.from(property, left.equals(right), () -> asString(left) + " != " + asString(right));
+        if (apple instanceof String) {
+            return Result.from(property, apple.equals(orange), () -> asString(apple) + " != " + asString(orange));
         }
 
-        if (left instanceof Number) {
-            return Result.from(property, left.equals(right), () -> left + " != " + right);
+        if (apple instanceof Number) {
+            return Result.from(property, apple.equals(orange), () -> apple + " != " + orange);
         }
 
-        if (left instanceof Collection) {
-            return compareCollections(property, (Collection<?>) left, (Collection<?>) right);
+        if (apple instanceof Collection) {
+            return compareCollections(property, (Collection<?>) apple, (Collection<?>) orange);
         }
 
-        if (left instanceof Map) {
-            return compareMaps(property, (Map<?, ?>) left, (Map<?, ?>) right);
+        if (apple instanceof Map) {
+            return compareMaps(property, (Map<?, ?>) apple, (Map<?, ?>) orange);
         }
 
-        if (left instanceof Comparable<?>) {
-            int comparison = ((Comparable) left).compareTo(right);
+        if (apple instanceof Comparable<?>) {
+            int comparison = ((Comparable) apple).compareTo(orange);
             if (comparison == 0) {
                 return new Result(true, List.of());
             } else {
-                return Result.from(property, false, left + " != " + right);
+                return Result.from(property, false, apple + " != " + orange);
             }
         }
         try {
-            ClassReader cr = new ClassReader(left.getClass().getName());
+            ClassReader cr = new ClassReader(apple.getClass().getName());
             AppleFactory appleFactory = new AppleFactory();
             cr.accept(appleFactory, ClassReader.SKIP_FRAMES);
             ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -69,29 +69,29 @@ public class Apples {
             byte[] byteArray = classWriter.toByteArray();
 
             generatedClassesLoader.addClass(appleFactory.classNode.name, byteArray);
-            BaseApple apple = (BaseApple) generatedClassesLoader.loadClass(appleFactory.classNode.name).getConstructor().newInstance();
-            return apple.compare(left, right);
+            BaseApple baseApple = (BaseApple) generatedClassesLoader.loadClass(appleFactory.classNode.name).getConstructor().newInstance();
+            return baseApple.compare(apple, orange);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static Result compareCollections(String property, Collection<?> left, Collection<?> right) {
+    private static Result compareCollections(String property, Collection<?> apple, Collection<?> orange) {
         List<String> diffs =
-                zipAndEnumerate(left, right)
-                        .map(t -> new Tuple4<Integer, Object, Object, Result>(t.e1, left, right, Apples.compare(property, t.e2, t.e3)))
+                zipAndEnumerate(apple, orange)
+                        .map(t -> new Tuple4<Integer, Object, Object, Result>(t.e1, apple, orange, Apples.compare(property, t.e2, t.e3)))
                         .filter(t -> !t.e4.areEqual())
                         .map(t -> property + "[" + t.e1 + "]:" + t.e2 + " != " + t.e3)
                         .collect(Collectors.toList());
         return new Result(!diffs.isEmpty(), diffs);
     }
 
-    private static Result compareMaps(String property, Map<?, ?> left, Map<?, ?> right) {
+    private static Result compareMaps(String property, Map<?, ?> apple, Map<?, ?> orange) {
         List<String> diffs = new ArrayList<>();
-        for (Map.Entry<?, ?> leftEntry : left.entrySet()) {
-            Object leftValue = leftEntry.getValue();
-            Object rightValue = right.get(leftEntry.getKey());
-            Result result = Apples.compare(property + "[" + leftEntry.getKey() + "]", leftValue, rightValue);
+        for (Map.Entry<?, ?> appleEntry : apple.entrySet()) {
+            Object appleValue = appleEntry.getValue();
+            Object orangeValue = orange.get(appleEntry.getKey());
+            Result result = Apples.compare(property + "[" + appleEntry.getKey() + "]", appleValue, orangeValue);
             if (!result.areEqual()) {
                 diffs.addAll(result.getDiffs());
             }
@@ -99,187 +99,187 @@ public class Apples {
         return new Result(diffs.isEmpty(), diffs);
     }
 
-    private static Stream<Tuple3<Integer, Object, Object>> zipAndEnumerate(Collection<?> left, Collection<?> right) {
-        Iterator<?> rightIt = right.iterator();
+    private static Stream<Tuple3<Integer, Object, Object>> zipAndEnumerate(Collection<?> apple, Collection<?> orange) {
+        Iterator<?> orangeListIterator = orange.iterator();
         LongAdder adder = new LongAdder();
-        return left.stream()
-                .filter(__ -> rightIt.hasNext())
+        return apple.stream()
+                .filter(__ -> orangeListIterator.hasNext())
                 .map(o -> {
-                    Tuple3<Integer, Object, Object> next = new Tuple3<>(adder.intValue(), o, rightIt.next());
+                    Tuple3<Integer, Object, Object> next = new Tuple3<>(adder.intValue(), o, orangeListIterator.next());
                     adder.increment();
                     return next;
                 });
     }
 
-    public static Result compare(long left, long right) {
-        return compare("", left, right);
+    public static Result compare(long apple, long orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, long left, long right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, long apple, long orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(int left, int right) {
-        return compare("", left, right);
+    public static Result compare(int apple, int orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, int left, int right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, int apple, int orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(short left, short right) {
-        return compare("", left, right);
+    public static Result compare(short apple, short orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, short left, short right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, short apple, short orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(byte left, byte right) {
-        return compare("", left, right);
+    public static Result compare(byte apple, byte orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, byte left, byte right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, byte apple, byte orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(float left, float right) {
-        return compare("", left, right);
+    public static Result compare(float apple, float orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, float left, float right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, float apple, float orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(Object left, long right) {
-        return compare("", left, right);
+    public static Result compare(Object apple, long orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, Object left, long right) {
-        if (left == null) {
-            return Result.unequal(property, "null != " + right);
+    public static Result compare(String property, Object apple, long orange) {
+        if (apple == null) {
+            return Result.unequal(property, "null != " + orange);
         }
 
-        if (left instanceof Long) {
-            return Result.from(property, (Long) left == right, asString(left) + " != " + right);
-        } else if (left instanceof Integer) {
-            return Result.from(property, (Integer) left == right, asString(left) + " != " + right);
-        } else if (left instanceof Short) {
-            return Result.from(property, (Short) left == right, asString(left) + " != " + right);
-        } else if (left instanceof Byte) {
-            return Result.from(property, (Byte) left == right, asString(left) + " != " + right);
+        if (apple instanceof Long) {
+            return Result.from(property, (Long) apple == orange, asString(apple) + " != " + orange);
+        } else if (apple instanceof Integer) {
+            return Result.from(property, (Integer) apple == orange, asString(apple) + " != " + orange);
+        } else if (apple instanceof Short) {
+            return Result.from(property, (Short) apple == orange, asString(apple) + " != " + orange);
+        } else if (apple instanceof Byte) {
+            return Result.from(property, (Byte) apple == orange, asString(apple) + " != " + orange);
         } else {
-            return Result.unequal(property, asString(left) + " != " + right);
+            return Result.unequal(property, asString(apple) + " != " + orange);
         }
     }
 
-    public static Result compare(char left, char right) {
-        return compare("", left, right);
+    public static Result compare(char apple, char orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, char left, char right) {
-        return Result.from(property, left == right, asString(left) + " != " + asString(right));
+    public static Result compare(String property, char apple, char orange) {
+        return Result.from(property, apple == orange, asString(apple) + " != " + asString(orange));
     }
 
-    public static Result compare(Object left, char right) {
-        return compare("", left, right);
+    public static Result compare(Object apple, char orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, Object left, char right) {
-        return Result.from(property, left instanceof Character && (Character) left == right, asString(left) + " != " + asString(right));
+    public static Result compare(String property, Object apple, char orange) {
+        return Result.from(property, apple instanceof Character && (Character) apple == orange, asString(apple) + " != " + asString(orange));
     }
 
-    public static Result compare(long left, Object right) {
-        return compare("", left, right);
+    public static Result compare(long apple, Object orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, long left, Object right) {
-        if (right == null) {
-            return Result.unequal(property, left + " != null");
+    public static Result compare(String property, long apple, Object orange) {
+        if (orange == null) {
+            return Result.unequal(property, apple + " != null");
         }
-        if (right instanceof Long) {
-            return Result.from(property, (Long) right == left, left + " != " + asString(right));
-        } else if (right instanceof Integer) {
-            return Result.from(property, (Integer) right == left, left + " != " + asString(right));
-        } else if (right instanceof Short) {
-            return Result.from(property, (Short) right == left, left + " != " + asString(right));
-        } else if (right instanceof Byte) {
-            return Result.from(property, (Byte) right == left, left + " != " + asString(right));
+        if (orange instanceof Long) {
+            return Result.from(property, (Long) orange == apple, apple + " != " + asString(orange));
+        } else if (orange instanceof Integer) {
+            return Result.from(property, (Integer) orange == apple, apple + " != " + asString(orange));
+        } else if (orange instanceof Short) {
+            return Result.from(property, (Short) orange == apple, apple + " != " + asString(orange));
+        } else if (orange instanceof Byte) {
+            return Result.from(property, (Byte) orange == apple, apple + " != " + asString(orange));
         } else {
-            return Result.unequal(property, left + " != " + asString(right));
+            return Result.unequal(property, apple + " != " + asString(orange));
         }
     }
 
-    public static Result compare(char left, Object right) {
-        return compare("", left, right);
+    public static Result compare(char apple, Object orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, char left, Object right) {
-        return Result.from(property, right instanceof Character && left == (Character) right, asString(left) + " != " + asString(right));
+    public static Result compare(String property, char apple, Object orange) {
+        return Result.from(property, orange instanceof Character && apple == (Character) orange, asString(apple) + " != " + asString(orange));
     }
 
-    public static Result compare(boolean left, boolean right) {
-        return compare("", left, right);
+    public static Result compare(boolean apple, boolean orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, boolean left, boolean right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, boolean apple, boolean orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(Object left, boolean right) {
-        return compare("", left, right);
+    public static Result compare(Object apple, boolean orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, Object left, boolean right) {
-        return Result.from(property, left instanceof Boolean && (Boolean) left == right, asString(left) + " != " + right);
+    public static Result compare(String property, Object apple, boolean orange) {
+        return Result.from(property, apple instanceof Boolean && (Boolean) apple == orange, asString(apple) + " != " + orange);
     }
 
-    public static Result compare(boolean left, Object right) {
-        return compare("", left, right);
+    public static Result compare(boolean apple, Object orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, boolean left, Object right) {
-        return Result.from(property, right instanceof Boolean && left == (Boolean) right, left + " != " + asString(right));
+    public static Result compare(String property, boolean apple, Object orange) {
+        return Result.from(property, orange instanceof Boolean && apple == (Boolean) orange, apple + " != " + asString(orange));
     }
 
-    public static Result compare(double left, double right) {
-        return compare("", left, right);
+    public static Result compare(double apple, double orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, double left, double right) {
-        return Result.from(property, left == right, left + " != " + right);
+    public static Result compare(String property, double apple, double orange) {
+        return Result.from(property, apple == orange, apple + " != " + orange);
     }
 
-    public static Result compare(double left, double right, int precision) {
-        return compare("", left, right, precision);
+    public static Result compare(double apple, double orange, int precision) {
+        return compare("", apple, orange, precision);
     }
 
-    public static Result compare(String property, double left, double right, int precision) {
-        return Result.from(property, (int) (left * Math.pow(10, precision)) == (int) (right * Math.pow(10, precision)), left + " != " + right + ", using precision" + precision);
+    public static Result compare(String property, double apple, double orange, int precision) {
+        return Result.from(property, (int) (apple * Math.pow(10, precision)) == (int) (orange * Math.pow(10, precision)), apple + " != " + orange + ", using precision" + precision);
     }
 
-    public static Result compare(Object left, double right) {
-        return compare("", left, right);
+    public static Result compare(Object apple, double orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, Object left, double right) {
-        return Result.from(property, left instanceof Double && (Double) left == right, asString(left) + " != " + right);
+    public static Result compare(String property, Object apple, double orange) {
+        return Result.from(property, apple instanceof Double && (Double) apple == orange, asString(apple) + " != " + orange);
     }
 
-    public static Result compare(double left, Object right) {
-        return compare("", left, right);
+    public static Result compare(double apple, Object orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, double left, Object right) {
-        return Result.from(property, right instanceof Double && left == (Double) right, left + " != " + asString(right));
+    public static Result compare(String property, double apple, Object orange) {
+        return Result.from(property, orange instanceof Double && apple == (Double) orange, apple + " != " + asString(orange));
     }
 
-    public static Result compare(float left, Object right) {
-        return compare("", left, right);
+    public static Result compare(float apple, Object orange) {
+        return compare("", apple, orange);
     }
 
-    public static Result compare(String property, float left, Object right) {
-        return Result.from(property, right instanceof Float && left == (Float) right, left + " != " + asString(right));
+    public static Result compare(String property, float apple, Object orange) {
+        return Result.from(property, orange instanceof Float && apple == (Float) orange, apple + " != " + asString(orange));
     }
 
     private static String asString(char value) {

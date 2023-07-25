@@ -1,6 +1,6 @@
 package nl.sander.apples;
 
-public abstract class BaseApple<T> {
+public abstract class BaseApple {
 
-    public abstract Result compare(T left, T right);
+    public abstract Result compare(Object apple, Object orange);
 }

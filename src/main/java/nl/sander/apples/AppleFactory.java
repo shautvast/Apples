@@ -38,7 +38,7 @@ class AppleFactory extends ClassVisitor {
         this.classToMap = name;
         classNode.name = "Apple" + UUID.randomUUID();
         classNode.superName = SUPER;
-        classNode.version = V1_8;
+        classNode.version = V11;
         classNode.access = ACC_PUBLIC;
         MethodNode constructor = new MethodNode(ACC_PUBLIC, INIT, ZERO_ARGS_VOID, null, null);
         constructor.instructions.add(new VarInsnNode(ALOAD, 0));

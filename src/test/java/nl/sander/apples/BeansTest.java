@@ -7,10 +7,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class BeansTest {
+public class BeansTest {
 
     @Test
-    void testRecords() {
+    void testBeans() {
         Result comparison = Apples.compare(new PlumBean("small", "red", true, 1, 1.0F, Storage.HIGH, (byte) 1, List.of(new Shop("tesco"))),
                 new PlumBean("large", "green", true, 1, 1.0F, Storage.LOW, (byte) 1, List.of(new Shop("asda"))));
 
