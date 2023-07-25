@@ -5,12 +5,11 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Modifier;
-import java.util.LinkedList;
 import java.util.UUID;
 
 import static org.objectweb.asm.Opcodes.*;
 
- class AppleFactory extends ClassVisitor {
+class AppleFactory extends ClassVisitor {
 
     public static final String SUPER = javaName(BaseApple.class.getName());
 
@@ -39,7 +38,7 @@ import static org.objectweb.asm.Opcodes.*;
         this.classToMap = name;
         classNode.name = "Apple" + UUID.randomUUID();
         classNode.superName = SUPER;
-        classNode.version = V20;
+        classNode.version = V1_8;
         classNode.access = ACC_PUBLIC;
         MethodNode constructor = new MethodNode(ACC_PUBLIC, INIT, ZERO_ARGS_VOID, null, null);
         constructor.instructions.add(new VarInsnNode(ALOAD, 0));
@@ -50,30 +49,32 @@ import static org.objectweb.asm.Opcodes.*;
         compareMethod = new MethodNode(ACC_PUBLIC,
                 "compare", "(Ljava/lang/Object;Ljava/lang/Object;)Lnl/sander/apples/Result;", null, null);
         classNode.methods.add(compareMethod);
-        add(new VarInsnNode(ALOAD,0));
+        add(new VarInsnNode(ALOAD, 0));
     }
 
     public MethodVisitor visitMethod(int access, String methodname,
                                      String desc, String signature, String[] exceptions) {
         if (!hasArgs(desc) && access == Modifier.PUBLIC && isRecord ||
                 (methodname.startsWith("get") || (methodname.startsWith("is")) && desc.equals("()Z"))) {
-            int startIndex;
-            if (isRecord) {
-                startIndex = 0;
-            } else {
-                if (methodname.startsWith("is")) {
-                    startIndex = 2;
-                } else {
-                    startIndex = 3;
-                }
-            }
-
-            visitGetter(correctName(methodname, startIndex), getReturnType(desc));
+            visitGetter(methodname, asProperty(methodname, isRecord), getReturnType(desc));
         }
         return null;
     }
 
-    private void visitGetter(String getterMethodName, String returnType) {
+    private String asProperty(String getter, boolean isRecord) {
+        if (isRecord){
+            return getter;
+        } else {
+            if (getter.startsWith("get")){
+                return getter.substring(3,4).toLowerCase()+getter.substring(4);
+            } else {
+                return getter.substring(2,3).toLowerCase()+getter.substring(3);
+            }
+        }
+    }
+
+    private void visitGetter(String getterMethodName, String propertyName, String returnType) {
+        add(new LdcInsnNode(propertyName));
         add(new VarInsnNode(ALOAD, 1));
         add(new TypeInsnNode(CHECKCAST, javaName(classToMap)));
         add(new MethodInsnNode(INVOKEVIRTUAL, classToMap, getterMethodName, "()" + returnType));
@@ -82,13 +83,20 @@ import static org.objectweb.asm.Opcodes.*;
         add(new TypeInsnNode(CHECKCAST, javaName(classToMap)));
         add(new MethodInsnNode(INVOKEVIRTUAL, classToMap, getterMethodName, "()" + returnType));
 
-        add(new MethodInsnNode(INVOKESTATIC, "nl/sander/apples/Apples", "compare", "(Ljava/lang/Object;Ljava/lang/Object;)Lnl/sander/apples/Result;"));
+        add(new MethodInsnNode(INVOKESTATIC, "nl/sander/apples/Apples", "compare", "("
+                + getSignature(returnType)
+                + ")Lnl/sander/apples/Result;"));
         add(new VarInsnNode(ASTORE, 3 + (localVarIndex++)));
     }
 
-    private String correctName(String getterMethodName, int startIndex) {
-        String tmp = getterMethodName.substring(startIndex);
-        return tmp.substring(0, 1).toLowerCase() + tmp.substring(1);
+    private String getSignature(String returnType) {
+        String type;
+        if (returnType.startsWith("L")) {
+            type = "Ljava/lang/Object;";
+        } else {
+            type = returnType;
+        }
+        return "Ljava/lang/String;"+type + type;
     }
 
     @Override

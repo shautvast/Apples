@@ -29,10 +29,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>20</release>
-                    <source>20</source>
-                    <target>20</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
+                   <release>11</release>
                 </configuration>
             </plugin>
         </plugins>
