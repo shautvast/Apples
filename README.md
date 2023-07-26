@@ -10,5 +10,5 @@ __nl.sander.reflective.compare.Compare__
 * Can optionally do 'structural comparison' (as opposed to _nominal_ like in the respective types of polymorphism). Let's say you have class Apple with property _color_ and a class Orange, also with property _color_. `Compare` provides `any` method with which you can compare the values disregarding the type that contains them.
 
 __nl.sander.reflective.tomap.ToMap__
-* turn any bean/record in a Map<String, Object>
+* turn any bean/record into a Map<String, Object>
 
