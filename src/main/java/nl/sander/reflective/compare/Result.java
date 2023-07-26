@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class Result {
     private final boolean areEqual;
     private final List<String> diffs;
@@ -68,6 +69,14 @@ public class Result {
 
     public boolean areEqual() {
         return areEqual;
+    }
+
+    public boolean hasException(){
+        return e != null;
+    }
+
+    public Throwable getException() {
+        return e;
     }
 
     public static Result merge(Result... result) {

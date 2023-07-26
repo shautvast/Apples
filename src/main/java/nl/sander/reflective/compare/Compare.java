@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
 /**
  * Deep (recursive) comparison of two objects
  * - floating point comparison with optional precision
@@ -21,6 +20,7 @@ import java.util.stream.Stream;
  *
  * In case of maps or differing object types, every item in apple is expected in orange, so apple can be subset of orange.
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class Compare {
     private final static Map<Character, String> CHAR_ESCAPES = Map.of('\t', "\\t", '\b', "\\b", '\n', "\\n", '\r', "\\r", '\f', "\\f", '\\', "\\\\");
 
@@ -84,7 +84,7 @@ public class Compare {
             if (apple.getClass() != orange.getClass()) {
                 if (allowDifferingTypes) {
                     // convert objects to maps and compare their keys/values
-                    return compareMaps(property, ToMap.map(apple), (Map<?, ?>) ToMap.map(orange), allowDifferingTypes);
+                    return compareMaps(property, ToMap.map(apple), ToMap.map(orange), allowDifferingTypes);
                 } else {
                     return Result.unequal(property, asString(apple) + " != " + asString(orange));
                 }

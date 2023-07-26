@@ -10,7 +10,7 @@ public class DifferentTypesTest {
         assertTrue(Compare.any(new Apple("orange"), new Orange("orange")).areEqual());
     }
 
-    class Apple {
+    static class Apple {
         final String color;
 
         Apple(String color) {
@@ -18,7 +18,7 @@ public class DifferentTypesTest {
         }
     }
 
-    class Orange {
+    static class Orange {
         final String color;
 
         Orange(String color) {
