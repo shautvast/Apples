@@ -1,4 +1,4 @@
-package nl.sander.apples;
+package nl.sander.reflective.compare;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +11,7 @@ public class BeansTest {
 
     @Test
     void testBeans() {
-        Result comparison = Apples.compare(new PlumBean("small", "red", true, 1, 1.0F, Storage.HIGH, (byte) 1, List.of(new Shop("tesco"))),
+        Result comparison = Compare.compare(new PlumBean("small", "red", true, 1, 1.0F, Storage.HIGH, (byte) 1, List.of(new Shop("tesco"))),
                 new PlumBean("large", "green", true, 1, 1.0F, Storage.LOW, (byte) 1, List.of(new Shop("asda"))));
 
         assertFalse(comparison.areEqual());

@@ -1,4 +1,4 @@
-package nl.sander.apples;
+package nl.sander.reflective.compare;
 
 import java.util.Arrays;
 import java.util.List;
@@ -6,17 +6,29 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unused") // used by generated code
 public class Result {
     private final boolean areEqual;
     private final List<String> diffs;
 
+    private final Throwable e;
+
     public Result(boolean areEqual, List<String> diffs) {
         this.areEqual = areEqual;
         this.diffs = diffs;
+        this.e = null;
     }
 
     public static Result SAME = new Result(true, List.of());
+
+    public Result(Throwable e) {
+        this.areEqual = false;//meh
+        this.diffs = null;
+        this.e = e;
+    }
+
+    public static Result error(Throwable e) {
+        return new Result(e);
+    }
 
     public static Result from(String property, boolean areEqual, String message) {
         if (!areEqual) {

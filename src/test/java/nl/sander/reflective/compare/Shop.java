@@ -1,4 +1,4 @@
-package nl.sander.apples;
+package nl.sander.reflective.compare;
 
 public class Shop {
     private final String name;

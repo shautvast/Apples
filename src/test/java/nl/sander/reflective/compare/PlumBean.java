@@ -1,4 +1,4 @@
-package nl.sander.apples;
+package nl.sander.reflective.compare;
 
 import java.util.List;
 

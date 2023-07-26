@@ -1,4 +1,4 @@
-package nl.sander.apples;
+package nl.sander.reflective.compare;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,32 +11,32 @@ class ObjectsTest {
 
     @Test
     void nullEqualsNull() {
-        assertTrue(Apples.compare(null, null).areEqual());
+        assertTrue(Compare.compare(null, null).areEqual());
     }
 
     @Test
     void nullNotEqualsSome() {
-        assertEquals(Result.unequal("null != \"some\""), Apples.compare(null, "some"));
+        assertEquals(Result.unequal("null != \"some\""), Compare.compare(null, "some"));
     }
 
     @Test
     void SomeNotEqualsNull() {
-        assertEquals(Result.unequal("\"some\" != null"), Apples.compare("some", null));
+        assertEquals(Result.unequal("\"some\" != null"), Compare.compare("some", null));
     }
 
     @Test
     void differentClass() {
-        assertEquals(Result.unequal("\"1\" != java.lang.Integer: 1"), Apples.compare("1", Integer.valueOf(1)));
+        assertEquals(Result.unequal("\"1\" != java.lang.Integer: 1"), Compare.compare("1", Integer.valueOf(1)));
     }
 
     @Test
     void sameKeysAndValues() {
-        assertTrue(Apples.compare("map", Map.of("a", 1, "b", 2), Map.of("b", 2, "a", 1)).areEqual());
+        assertTrue(Compare.compare("map", Map.of("a", 1, "b", 2), Map.of("b", 2, "a", 1)).areEqual());
     }
 
     @Test
     void differentKeysAndValues() {
-        Result result = Apples.compare("map", Map.of("a", 2, "b", 1), Map.of("b", 2, "a", 1));
+        Result result = Compare.compare("map", Map.of("a", 2, "b", 1), Map.of("b", 2, "a", 1));
         assertFalse(result.areEqual());
         assertTrue(result.getDiffs().contains("for map[b]: 1 != 2"));
         assertTrue(result.getDiffs().contains("for map[a]: 2 != 1"));
@@ -44,14 +44,14 @@ class ObjectsTest {
 
     @Test
     void bigDecimals() {
-        Result result = Apples.compare(BigDecimal.valueOf(0), BigDecimal.valueOf(1));
+        Result result = Compare.compare(BigDecimal.valueOf(0), BigDecimal.valueOf(1));
         assertFalse(result.areEqual());
         assertEquals("0 != 1", result.getDiffs().get(0));
     }
 
     @Test
     void enums() {
-        Result result = Apples.compare(Storage.HIGH, Storage.LOW);
+        Result result = Compare.compare(Storage.HIGH, Storage.LOW);
         assertFalse(result.areEqual());
         assertEquals("HIGH != LOW", result.getDiffs().get(0));
     }

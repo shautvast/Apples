@@ -1,11 +1,17 @@
-package nl.sander.apples;
+package nl.sander.reflective.java;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-class ByteClassLoader extends ClassLoader {
+/*
+ * common util not for external use
+ *
+ * Loads the class into the jvm, after the user has generated some bytecode
+ */
+public class ByteClassLoader extends ClassLoader {
 
     private final ConcurrentMap<String, Class<?>> classes = new ConcurrentHashMap<>();
+    public final static ByteClassLoader INSTANCE = new ByteClassLoader();
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
