@@ -5,7 +5,6 @@ Utility classes that use ASM for generating metaclasses as if it were standard j
 __nl.sander.reflective.compare.Compare__
 * universal (deep) compare tool
 * compares [apple] to [orange] recursively and shows the diff
-* no reflection
 * compiles to bytecode version jdk11
 * but also handles records, if you run jdk16+
 * Can optionally do 'structural comparison' (as opposed to _nominal_ like in the respective types of polymorphism). Let's say you have class Apple with property _color_ and a class Orange, also with property _color_. `Compare` provides `any` method with which you can compare the values disregarding the type that contains them.
