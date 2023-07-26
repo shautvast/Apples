@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.sander</groupId>
     <artifactId>reflective</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>reflective</name>
     <description>Reflective utils that don't use java.lang.reflect</description>
 
@@ -28,11 +28,12 @@
 
     <distributionManagement>
         <repository>
-            <id>ossrh</id>
-            <name>Central Repository OSSRH</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/shautvast/reflective</url>
         </repository>
     </distributionManagement>
+
 
     <build>
         <plugins>
@@ -41,7 +42,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                   <release>11</release>
+                    <release>11</release>
                 </configuration>
             </plugin>
         </plugins>
