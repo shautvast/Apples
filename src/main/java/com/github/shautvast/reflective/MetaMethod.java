@@ -3,8 +3,9 @@ package com.github.shautvast.reflective;
 import com.github.shautvast.reflective.java.Java;
 import com.github.shautvast.rusty.Result;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.github.shautvast.rusty.Result.err;
@@ -15,16 +16,21 @@ public class MetaMethod {
     private final String name;
     private final int modifiers;
     private final String descriptor;
-    private List<Class<?>> parameters = new LinkedList<>();
-    private Class<?> returnParameter;
-    private final AbstractInvoker invoker = InvokerFactory.of(this).unwrapOr(() -> null);
+    private final List<Parameter<?>> parameters;
+    private Parameter<?> returnParameter;
+    private final AbstractInvoker invoker;
 
     public MetaMethod(MetaClass metaClass, String methodname, int modifiers, String descriptor) {
         this.metaClass = metaClass;
         this.name = methodname;
         this.modifiers = modifiers;
         this.descriptor = descriptor;
-        getParameters(descriptor);
+        this.parameters = createParameters(descriptor);
+        if (!Modifier.isPrivate(modifiers)) {
+            invoker = InvokerFactory.of(this).unwrap();//TODO
+        } else {
+            invoker = null;
+        }
     }
 
     public String getName() {
@@ -43,11 +49,11 @@ public class MetaMethod {
         return descriptor;
     }
 
-    public List<Class<?>> getParameters() {
+    public List<Parameter<?>> getParameters() {
         return parameters;
     }
 
-    public Class<?> getReturnParameter() {
+    public Parameter<?> getReturnParameter() {
         return returnParameter;
     }
 
@@ -65,24 +71,39 @@ public class MetaMethod {
         }
     }
 
-    private void getParameters(String descriptor) {
+    private List<Parameter<?>> createParameters(String descriptor) {
+        List<Parameter<?>> mutableParams = new ArrayList<>();
         String[] split = descriptor.split("[()]");
         String parms = split[1];
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < parms.length(); i++) {
             String t = Character.toString(parms.charAt(i));
             if (!"L".equals(t) && buf.length() == 0) {
-                this.parameters.add(Java.getClassFromDescriptor(t));
+                mutableParams.add(new Parameter<>(Java.getClassFromDescriptor(t), t));
             }
             if (";".equals(t)) {
                 buf.append(t);
-                this.parameters.add(Java.getClassFromDescriptor(buf.toString()));
+                String desc = buf.toString();
+                mutableParams.add(new Parameter<>(Java.getClassFromDescriptor(desc), correct(desc)));
                 buf = new StringBuilder();
             } else {
                 buf.append(t);
             }
         }
-        this.parameters = Collections.unmodifiableList(this.parameters); //effectively final
-        this.returnParameter = Java.getClassFromDescriptor(split[2]);
+
+        String returnDesc = split[2];
+        this.returnParameter = new Parameter<>(
+                Java.getClassFromDescriptor(returnDesc),
+                correct(returnDesc));
+
+        return Collections.unmodifiableList(mutableParams);
+    }
+
+    private static String correct(String returnDesc) {
+        if (returnDesc.startsWith("L")) {
+            return returnDesc.substring(1, returnDesc.length() - 1);
+        } else {
+            return returnDesc;
+        }
     }
 }

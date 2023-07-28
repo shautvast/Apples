@@ -50,7 +50,7 @@ public class ReflectiveTest {
 
 
     @Test
-    void testInvocation() {
+    void testInvokeGetter() {
         Dummy dummy = new Dummy("bar");
         MetaMethod getName = Reflective.getMetaForClass(dummy.getClass()).getMethod("getName").orElseGet(Assertions::fail);
 
@@ -58,9 +58,20 @@ public class ReflectiveTest {
         assertEquals("bar", getName.invoke(dummy).unwrap());
     }
 
+    @Test
+    void testInvokeSetter() {
+        Dummy dummy = new Dummy("bar");
+        MetaClass metaForClass = Reflective.getMetaForClass(dummy.getClass());
+        MetaMethod setName = metaForClass.getMethod("setName").orElseGet(Assertions::fail);
+
+        assertEquals("bar", dummy.getName()); // before invoke
+        setName.invoke(dummy, "foo");
+        assertEquals("foo", dummy.getName()); // after invoke
+    }
+
 
     public static class Dummy {
-        private final String name;
+        private String name;
 
         public Dummy(String name) {
             this.name = name;
@@ -68,6 +79,10 @@ public class ReflectiveTest {
 
         public String getName() {
             return privateMethod()[0];
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         @Override

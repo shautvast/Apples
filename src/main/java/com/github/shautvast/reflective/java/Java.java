@@ -136,6 +136,8 @@ public class Java {
                     return isArray ? newInstance(short.class, new int[arrayDims]).getClass() : short.class;
                 case 'Z':
                     return isArray ? newInstance(boolean.class, new int[arrayDims]).getClass() : boolean.class;
+                case 'V':
+                    return Void.class;
                 default:
                     throw new RuntimeException(new ClassNotFoundException("unknown descriptor: " + descriptor)); //must not happen
             }
