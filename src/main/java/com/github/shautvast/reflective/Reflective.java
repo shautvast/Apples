@@ -5,11 +5,7 @@ import org.objectweb.asm.ClassReader;
 
 public class Reflective {
 
-    public static MetaClass getMetaForClass(Class<?> type){
-        return getMetaClass(type);
-    }
-
-    private static MetaClass getMetaClass(Class<?> type) {
+    public static MetaClass getMetaClass(Class<?> type) {
         try {
             ClassReader cr = Java.getClassReader(type);
 

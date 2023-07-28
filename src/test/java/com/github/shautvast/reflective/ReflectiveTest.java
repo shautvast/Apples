@@ -16,7 +16,7 @@ public class ReflectiveTest {
     @Test
     void testMethods() {
         Dummy dummy = new Dummy("bar");
-        MetaClass metaDummy = Reflective.getMetaForClass(dummy.getClass());
+        MetaClass metaDummy = Reflective.getMetaClass(dummy.getClass());
         assertEquals("com.github.shautvast.reflective.ReflectiveTest$Dummy", metaDummy.getName());
 
         Iterator<MetaField> fields = metaDummy.getFields().iterator();
@@ -52,7 +52,7 @@ public class ReflectiveTest {
     @Test
     void testInvokeGetter() {
         Dummy dummy = new Dummy("bar");
-        MetaMethod getName = Reflective.getMetaForClass(dummy.getClass()).getMethod("getName").orElseGet(Assertions::fail);
+        MetaMethod getName = Reflective.getMetaClass(dummy.getClass()).getMethod("getName").orElseGet(Assertions::fail);
 
         assertThrows(Panic.class, () -> getName.invoke("foo").unwrap());
         assertEquals("bar", getName.invoke(dummy).unwrap());
@@ -61,7 +61,7 @@ public class ReflectiveTest {
     @Test
     void testInvokeSetter() {
         Dummy dummy = new Dummy("bar");
-        MetaClass metaForClass = Reflective.getMetaForClass(dummy.getClass());
+        MetaClass metaForClass = Reflective.getMetaClass(dummy.getClass());
         MetaMethod setName = metaForClass.getMethod("setName").orElseGet(Assertions::fail);
 
         assertEquals("bar", dummy.getName()); // before invoke
