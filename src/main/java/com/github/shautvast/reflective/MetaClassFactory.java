@@ -5,26 +5,24 @@ import com.github.shautvast.reflective.java.Java;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.tree.ClassNode;
 
 import static org.objectweb.asm.Opcodes.ASM9;
 
 public class MetaClassFactory extends ClassVisitor {
     public static final String SUPER = Java.internalName(AbstractComparator.class);
 
-    private boolean isRecord = false;
-
-    final ClassNode classNode = new ClassNode();
+    final Class<?> javaClass;
 
     private MetaClass metaClassToBuild;
 
-    public MetaClassFactory() {
+    public MetaClassFactory(Class<?>javaClass) {
         super(ASM9);
+        this.javaClass = javaClass;
     }
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        metaClassToBuild = new MetaClass(Java.externalName(name));
+        metaClassToBuild = new MetaClass(javaClass, name);
     }
 
     @Override
@@ -36,7 +34,11 @@ public class MetaClassFactory extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String methodname,
                                      String descriptor, String signature, String[] exceptions) {
-        metaClassToBuild.addMethod(access, methodname, descriptor);
+        if (!Java.isConstructor(methodname)) {
+            metaClassToBuild.addMethod(access, methodname, descriptor);
+        } else {
+            metaClassToBuild.addConstructor(access, methodname, descriptor);
+        }
         return null;
     }
 

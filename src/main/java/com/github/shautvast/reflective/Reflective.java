@@ -13,7 +13,7 @@ public class Reflective {
         try {
             ClassReader cr = Java.getClassReader(type);
 
-            MetaClassFactory factory = new MetaClassFactory();
+            MetaClassFactory factory = new MetaClassFactory(type);
             cr.accept(factory, ClassReader.SKIP_FRAMES);
             return factory.getMetaClass();
         } catch (Exception e) {

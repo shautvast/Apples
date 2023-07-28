@@ -12,3 +12,9 @@ __nl.sander.reflective.compare.Compare__
 __nl.sander.reflective.tomap.ToMap__
 * turn any bean/record into a Map<String, Object>
 
+Now working on capabilities that mimick java.lang.reflect
+* not going to create something like setAccessible(true), since that's likely impossible without jdk support, and probably not wanted either
+* I do plan to substitute java.lang.reflect.Array, because of it's VERY poor performance
+* a read model for methods, fields etc
+* invocation capabilities
+ 

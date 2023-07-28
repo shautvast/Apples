@@ -1,5 +1,6 @@
 package com.github.shautvast.reflective.compare;
 
+import com.github.shautvast.reflective.java.ASM;
 import com.github.shautvast.reflective.java.Java;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -20,10 +21,8 @@ class ComparatorFactory extends ClassVisitor {
         super(ASM9);
     }
 
-    final ClassNode classNode = new ClassNode();
-
     private String classToMap;
-
+    ClassNode classNode;
     private MethodNode compareMethod;
 
     private int localVarIndex = 0;
@@ -34,15 +33,7 @@ class ComparatorFactory extends ClassVisitor {
             isRecord = true;
         }
         this.classToMap = name;
-        classNode.name = "Apple" + UUID.randomUUID();
-        classNode.superName = SUPER;
-        classNode.version = V11;
-        classNode.access = ACC_PUBLIC;
-        MethodNode constructor = new MethodNode(ACC_PUBLIC, Java.INIT, Java.ZERO_ARGS_VOID, null, null);
-        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
-        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, SUPER, Java.INIT, Java.ZERO_ARGS_VOID));
-        constructor.instructions.add(new InsnNode(RETURN));
-        classNode.methods.add(constructor);
+        classNode = ASM.createDefaultClassNode("Apple" + UUID.randomUUID(), SUPER);
 
         compareMethod = new MethodNode(ACC_PUBLIC,
                 "compare", "(Ljava/lang/Object;Ljava/lang/Object;)L" + Java.internalName(Result.class) + ";", null, null);

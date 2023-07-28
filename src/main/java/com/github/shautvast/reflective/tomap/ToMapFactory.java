@@ -1,5 +1,6 @@
 package com.github.shautvast.reflective.tomap;
 
+import com.github.shautvast.reflective.java.ASM;
 import com.github.shautvast.reflective.java.Java;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -13,10 +14,9 @@ import static org.objectweb.asm.Opcodes.*;
 class ToMapFactory extends ClassVisitor {
     public static final String SUPER_NAME = Java.internalName(AbstractToMap.class.getName());
     private boolean isRecord = false;
-    final ClassNode classNode = new ClassNode();
 
     private String classToMap;
-
+    ClassNode classNode;
     private MethodNode mappifyMethod;
 
 
@@ -30,15 +30,7 @@ class ToMapFactory extends ClassVisitor {
             isRecord = true;
         }
         this.classToMap = name;
-        classNode.name = "ToMap" + UUID.randomUUID();
-        classNode.superName = SUPER_NAME;
-        classNode.version = V11;
-        classNode.access = ACC_PUBLIC;
-        MethodNode constructor = new MethodNode(ACC_PUBLIC, Java.INIT, Java.ZERO_ARGS_VOID, null, null);
-        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
-        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, SUPER_NAME, Java.INIT, Java.ZERO_ARGS_VOID));
-        constructor.instructions.add(new InsnNode(RETURN));
-        classNode.methods.add(constructor);
+        classNode = ASM.createDefaultClassNode("ToMap" + UUID.randomUUID(), SUPER_NAME);
 
         mappifyMethod = new MethodNode(ACC_PUBLIC,
                 "toMap", "(Ljava/lang/Object;)Ljava/util/Map;", null, null);
@@ -66,11 +58,11 @@ class ToMapFactory extends ClassVisitor {
         add(new VarInsnNode(ALOAD, 1));
         add(new TypeInsnNode(CHECKCAST, Java.internalName(classToMap)));
         add(new MethodInsnNode(INVOKEVIRTUAL, classToMap, getterMethodName, "()" + returnType));
-        add(new MethodInsnNode(INVOKEVIRTUAL, classNode.name, "add", "(Ljava/util/HashMap;Ljava/lang/String;"+translate(returnType)+")V"));
+        add(new MethodInsnNode(INVOKEVIRTUAL, classNode.name, "add", "(Ljava/util/HashMap;Ljava/lang/String;" + translate(returnType) + ")V"));
     }
 
-    private String translate(String typeDesc){
-        if (typeDesc.startsWith("L")){
+    private String translate(String typeDesc) {
+        if (typeDesc.startsWith("L")) {
             return Java.OBJECT;
         } else {
             return typeDesc;
