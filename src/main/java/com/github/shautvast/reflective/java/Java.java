@@ -15,6 +15,14 @@ public class Java {
     public static final String ZERO_ARGS_VOID = "()V";
     public static final String OBJECT = "Ljava/lang/Object;";
 
+    public static final String BOOLEAN = "java/lang/Boolean";
+    public static final String INTEGER = "java/lang/Integer";
+    public static final String LONG = "java/lang/Long";
+    public static final String FLOAT = "java/lang/Float";
+    public static final String DOUBLE = "java/lang/Double";
+    public static final String CHAR = "java/lang/Character";
+    public static final String SHORT = "java/lang/Short";
+
     public static String internalName(String className) {
         return className.replaceAll("\\.", "/");
     }

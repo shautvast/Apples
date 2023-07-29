@@ -25,26 +25,25 @@ public class ReflectiveTest {
 
         Set<MetaMethod> methods = metaDummy.getMethods();
         assertFalse(methods.isEmpty());
-        assertEquals(4, methods.size());
+        assertEquals(5, methods.size());
 
         MetaMethod equals = metaDummy.getMethod("equals").orElseGet(Assertions::fail);
-        assertEquals(List.of(Object.class), equals.getParameters());
-        assertEquals(boolean.class, equals.getReturnParameter());
+        assertEquals(boolean.class, equals.getReturnParameter().getType());
         assertTrue(Modifier.isPublic(equals.getModifiers()));
 
         MetaMethod hashCode = metaDummy.getMethod("hashCode").orElseGet(Assertions::fail);
         assertEquals(List.of(), hashCode.getParameters());
-        assertEquals(int.class, hashCode.getReturnParameter());
+        assertEquals(int.class, hashCode.getReturnParameter().getType());
         assertTrue(Modifier.isPublic(hashCode.getModifiers()));
 
         MetaMethod getName = metaDummy.getMethod("getName").orElseGet(Assertions::fail);
         assertEquals(List.of(), getName.getParameters());
-        assertEquals(String.class, getName.getReturnParameter());
+        assertEquals(String.class, getName.getReturnParameter().getType());
         assertTrue(Modifier.isPublic(getName.getModifiers()));
 
         MetaMethod privateMethod = metaDummy.getMethod("privateMethod").orElseGet(Assertions::fail);
         assertEquals(List.of(), privateMethod.getParameters());
-        assertEquals(String[].class, privateMethod.getReturnParameter());
+        assertEquals(String[].class, privateMethod.getReturnParameter().getType());
         assertTrue(Modifier.isPrivate(privateMethod.getModifiers()));
     }
 

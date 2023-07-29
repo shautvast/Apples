@@ -26,4 +26,8 @@ public class ByteClassLoader extends ClassLoader {
         Class<?> classDef = defineClass(name, bytecode, 0, bytecode.length);
         classes.put(name, classDef);
     }
+
+    public boolean isDefined(String className) {
+        return classes.containsKey(className);
+    }
 }
