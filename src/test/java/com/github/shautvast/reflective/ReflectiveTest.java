@@ -1,6 +1,7 @@
 package com.github.shautvast.reflective;
 
 import com.github.shautvast.rusty.Panic;
+import com.github.shautvast.rusty.Result;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ public class ReflectiveTest {
 
         Set<MetaMethod> methods = metaDummy.getMethods();
         assertFalse(methods.isEmpty());
-        assertEquals(5, methods.size());
+        assertEquals(6, methods.size());
 
         MetaMethod equals = metaDummy.getMethod("equals").orElseGet(Assertions::fail);
         assertEquals(boolean.class, equals.getReturnParameter().getType());
@@ -68,6 +69,16 @@ public class ReflectiveTest {
         assertEquals("foo", dummy.getName()); // after invoke
     }
 
+    @Test
+    void testInvocationExceptionHappened() {
+        Dummy dummy = new Dummy("bar");
+        MetaClass metaForClass = Reflective.getMetaClass(dummy.getClass());
+        MetaMethod throwEx = metaForClass.getMethod("throwEx").orElseGet(Assertions::fail);
+
+        Result<Void> result = throwEx.invoke(dummy, "foo");
+        assertFalse(result.isOk());
+    }
+
 
     public static class Dummy {
         private String name;
@@ -82,6 +93,10 @@ public class ReflectiveTest {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public void throwEx() throws Exception {
+           throw new Exception("something must have gone wrong");
         }
 
         @Override

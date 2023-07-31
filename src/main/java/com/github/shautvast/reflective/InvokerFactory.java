@@ -75,6 +75,12 @@ public class InvokerFactory {
         classNode.accept(classWriter);
         byte[] byteArray = classWriter.toByteArray();
 
+//        try (FileOutputStream out = new FileOutputStream("C.class")) {
+//            out.write(byteArray);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         // load it into the JVM
         ByteClassLoader.INSTANCE.addClass(className, byteArray);
         return getInvoker(classNode.name);

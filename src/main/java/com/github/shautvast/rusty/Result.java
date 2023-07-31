@@ -65,4 +65,8 @@ public class Result<T> {
             return new Result<>(null, error);
         }
     }
+
+    public boolean isOk() {
+        return error == null;
+    }
 }
