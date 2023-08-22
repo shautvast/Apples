@@ -32,7 +32,7 @@ public class InvokerFactory {
      */
     public static Result<AbstractInvoker> of(MetaMethod method) {
         // new ASM ClassNode with default constructor
-        String className = "Invoker" + method.getName() + method.getDescriptor().replaceAll("[()/;\\[]", "");
+        String className = "Invoker" + method.getMetaClass().getJavaClass().getSimpleName() + method.getName() + method.getDescriptor().replaceAll("[()/;\\[]", "");
         if (ByteClassLoader.INSTANCE.isDefined(className)) {
             return getInvoker(className);
         }

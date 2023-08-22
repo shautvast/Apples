@@ -143,6 +143,5 @@ public class ReflectiveTest {
         public void throwEx() {
             throw new RuntimeException("ex");
         }
-
     }
 }
