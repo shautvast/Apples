@@ -54,7 +54,9 @@ public class ReflectiveTest {
         Dummy dummy = new Dummy("bar");
         MetaMethod getName = Reflective.getMetaClass(dummy.getClass()).getMethod("getName").orElseGet(Assertions::fail);
 
+        // passing "foo" as the instance is not allowed
         assertThrows(Panic.class, () -> getName.invoke("foo").unwrap());
+        // we should pass a valid dummy instance
         assertEquals("bar", getName.invoke(dummy).unwrap());
     }
 
