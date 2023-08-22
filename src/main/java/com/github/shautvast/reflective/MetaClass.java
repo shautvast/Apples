@@ -34,6 +34,7 @@ public class MetaClass {
         return Set.copyOf(methods.values());
     }
 
+    // should account for overloading!
     public Optional<MetaMethod> getMethod(String name) {
         return Optional.ofNullable(methods.get(name));
     }

@@ -22,6 +22,7 @@ public class Java {
     public static final String DOUBLE = "java/lang/Double";
     public static final String CHAR = "java/lang/Character";
     public static final String SHORT = "java/lang/Short";
+    public static final String BYTE = "java/lang/Byte";
 
     public static String internalName(String className) {
         return className.replaceAll("\\.", "/");

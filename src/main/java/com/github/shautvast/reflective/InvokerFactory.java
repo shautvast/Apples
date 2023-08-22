@@ -9,11 +9,11 @@ import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static com.github.shautvast.reflective.java.Java.*;
 import static com.github.shautvast.reflective.java.Java.DOUBLE;
 import static com.github.shautvast.reflective.java.Java.FLOAT;
 import static com.github.shautvast.reflective.java.Java.INTEGER;
 import static com.github.shautvast.reflective.java.Java.LONG;
+import static com.github.shautvast.reflective.java.Java.*;
 import static com.github.shautvast.rusty.Result.err;
 import static com.github.shautvast.rusty.Result.ok;
 import static org.objectweb.asm.Opcodes.*;
@@ -58,12 +58,13 @@ public class InvokerFactory {
             }
             // put argument on the stack
             insns.add(new InsnNode(AALOAD));
-            insns.add(new TypeInsnNode(CHECKCAST, method.getParameters().get(i).getDescriptor()));
+            insns.add(new TypeInsnNode(CHECKCAST, Java.internalName(mapPrimitiveToWrapper(method.getParameters().get(i).getType()).getName())));
+            unwrapPrimitive(method.getParameters().get(i), insns);
         }
         // call the method
         insns.add(new MethodInsnNode(INVOKEVIRTUAL, method.getMetaClass().getRawName(), method.getName(), method.getDescriptor()));
         // if the returned argument is primitive, wrap it as an Object
-        wrapAnyPrimitivesForReturnObject(method, invokerMethod);
+        wrapPrimitive(method.getReturnParameter(), invokerMethod.instructions);
         // return the object on the stack
         insns.add(new InsnNode(ARETURN));
 
@@ -75,7 +76,7 @@ public class InvokerFactory {
         classNode.accept(classWriter);
         byte[] byteArray = classWriter.toByteArray();
 
-//        try (FileOutputStream out = new FileOutputStream("C.class")) {
+//        try (FileOutputStream out = new FileOutputStream("C"+method.getName() + ".class")) {
 //            out.write(byteArray);
 //        } catch (IOException e) {
 //            e.printStackTrace();
@@ -95,12 +96,39 @@ public class InvokerFactory {
         }
     }
 
+    private static void unwrapPrimitive(Parameter<?> parameter, InsnList insns) {
+        switch (parameter.getDescriptor()) {
+            case "B":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B"));
+                break;
+            case "S":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S"));
+                break;
+            case "I":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I"));
+                break;
+            case "Z":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z"));
+                break;
+            case "J":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J"));
+                break;
+            case "F":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F"));
+                break;
+            case "D":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D"));
+                break;
+            case "C":
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C"));
+        }
+    }
+
     /*
      * wrap primitives in their wrapper
      */
-    private static void wrapAnyPrimitivesForReturnObject(MetaMethod m, MethodNode invokerMethod) {
-        InsnList insns = invokerMethod.instructions;
-        switch (m.getReturnParameter().getDescriptor()) {
+    private static void wrapPrimitive(Parameter<?> parameter, InsnList insns) {
+        switch (parameter.getDescriptor()) {
             case "V":
                 insns.add(new InsnNode(ACONST_NULL));
                 break;
@@ -126,8 +154,30 @@ public class InvokerFactory {
                 insns.add(new MethodInsnNode(INVOKESTATIC, SHORT, VALUEOF, "(S)Ljava/lang/Short;"));
                 break;
             case "B":
-                insns.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Byte", VALUEOF, "(B)Ljava/lang/Byte;"));
+                insns.add(new MethodInsnNode(INVOKESTATIC, BYTE, VALUEOF, "(B)Ljava/lang/Byte;"));
                 break;
+        }
+    }
+
+    private static Class<?> mapPrimitiveToWrapper(Class<?> type) {
+        if (type == int.class) {
+            return Integer.class;
+        } else if (type == byte.class) {
+            return Byte.class;
+        } else if (type == short.class) {
+            return Short.class;
+        } else if (type == long.class) {
+            return Long.class;
+        } else if (type == float.class) {
+            return Float.class;
+        } else if (type == double.class) {
+            return Double.class;
+        } else if (type == char.class) {
+            return Character.class;
+        } else if (type == boolean.class) {
+            return Boolean.class;
+        } else {
+            return type;
         }
     }
 

@@ -2,11 +2,13 @@ package com.github.shautvast.reflective;
 
 import com.github.shautvast.rusty.Panic;
 import com.github.shautvast.rusty.Result;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Modifier;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -16,17 +18,13 @@ public class ReflectiveTest {
 
     @Test
     void testMethods() {
-        Dummy dummy = new Dummy("bar");
+        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
         MetaClass metaDummy = Reflective.getMetaClass(dummy.getClass());
         assertEquals("com.github.shautvast.reflective.ReflectiveTest$Dummy", metaDummy.getName());
 
-        Iterator<MetaField> fields = metaDummy.getFields().iterator();
-        assertTrue(fields.hasNext());
-        assertEquals("name", fields.next().getName());
-
         Set<MetaMethod> methods = metaDummy.getMethods();
         assertFalse(methods.isEmpty());
-        assertEquals(6, methods.size());
+        assertEquals(22, methods.size());
 
         MetaMethod equals = metaDummy.getMethod("equals").orElseGet(Assertions::fail);
         assertEquals(boolean.class, equals.getReturnParameter().getType());
@@ -37,10 +35,10 @@ public class ReflectiveTest {
         assertEquals(int.class, hashCode.getReturnParameter().getType());
         assertTrue(Modifier.isPublic(hashCode.getModifiers()));
 
-        MetaMethod getName = metaDummy.getMethod("getName").orElseGet(Assertions::fail);
-        assertEquals(List.of(), getName.getParameters());
-        assertEquals(String.class, getName.getReturnParameter().getType());
-        assertTrue(Modifier.isPublic(getName.getModifiers()));
+        MetaMethod getStringValue = metaDummy.getMethod("getStringValue").orElseGet(Assertions::fail);
+        assertEquals(List.of(), getStringValue.getParameters());
+        assertEquals(String.class, getStringValue.getReturnParameter().getType());
+        assertTrue(Modifier.isPublic(getStringValue.getModifiers()));
 
         MetaMethod privateMethod = metaDummy.getMethod("privateMethod").orElseGet(Assertions::fail);
         assertEquals(List.of(), privateMethod.getParameters());
@@ -51,29 +49,60 @@ public class ReflectiveTest {
 
     @Test
     void testInvokeGetter() {
-        Dummy dummy = new Dummy("bar");
-        MetaMethod getName = Reflective.getMetaClass(dummy.getClass()).getMethod("getName").orElseGet(Assertions::fail);
+        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
+        MetaMethod getStringValue = Reflective.getMetaClass(dummy.getClass()).getMethod("getStringValue").orElseGet(Assertions::fail);
 
         // passing "foo" as the instance is not allowed
-        assertThrows(Panic.class, () -> getName.invoke("foo").unwrap());
+        assertThrows(Panic.class, () -> getStringValue.invoke("foo").unwrap());
         // we should pass a valid dummy instance
-        assertEquals("bar", getName.invoke(dummy).unwrap());
+        assertEquals("don't panic!", getStringValue.invoke(dummy).unwrap());
     }
 
     @Test
-    void testInvokeSetter() {
-        Dummy dummy = new Dummy("bar");
+    void testInvokeSetters() {
+        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
         MetaClass metaForClass = Reflective.getMetaClass(dummy.getClass());
-        MetaMethod setName = metaForClass.getMethod("setName").orElseGet(Assertions::fail);
 
-        assertEquals("bar", dummy.getName()); // before invoke
-        setName.invoke(dummy, "foo");
-        assertEquals("foo", dummy.getName()); // after invoke
+        MetaMethod setByte = metaForClass.getMethod("setByteValue").orElseGet(Assertions::fail);
+        setByte.invoke(dummy, (byte) -42).unwrap();
+        assertEquals((byte) -42, dummy.getByteValue());
+
+        MetaMethod setShort = metaForClass.getMethod("setShortValue").orElseGet(Assertions::fail);
+        setShort.invoke(dummy, (short) -43).unwrap();
+        assertEquals((short) -43, dummy.getShortValue());
+
+        MetaMethod setInt = metaForClass.getMethod("setIntValue").orElseGet(Assertions::fail);
+        setInt.invoke(dummy, -44).unwrap();
+        assertEquals(-44, dummy.getIntValue());
+
+        MetaMethod setLongValue = metaForClass.getMethod("setLongValue").orElseGet(Assertions::fail);
+        setLongValue.invoke(dummy, -45L).unwrap();
+        assertEquals(-45L, dummy.getLongValue());
+
+        MetaMethod setFloat = metaForClass.getMethod("setFloatValue").orElseGet(Assertions::fail);
+        setFloat.invoke(dummy, -46.0F).unwrap();
+        assertEquals(-46.0F, dummy.getFloatValue());
+
+        MetaMethod setDouble = metaForClass.getMethod("setDoubleValue").orElseGet(Assertions::fail);
+        setDouble.invoke(dummy, -47.0).unwrap();
+        assertEquals(-47.0, dummy.getDoubleValue());
+
+        MetaMethod setChar = metaForClass.getMethod("setCharValue").orElseGet(Assertions::fail);
+        setChar.invoke(dummy, '-').unwrap();
+        assertEquals('-', dummy.getCharValue());
+
+        MetaMethod setBoolean = metaForClass.getMethod("setBooleanValue").orElseGet(Assertions::fail);
+        setBoolean.invoke(dummy, false).unwrap();
+        assertFalse(dummy.isBooleanValue());
+
+        MetaMethod setString = metaForClass.getMethod("setStringValue").orElseGet(Assertions::fail);
+        setString.invoke(dummy, "panic!").unwrap();
+        assertEquals("panic!", dummy.getStringValue());
     }
 
     @Test
     void testInvocationExceptionHappened() {
-        Dummy dummy = new Dummy("bar");
+        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
         MetaClass metaForClass = Reflective.getMetaClass(dummy.getClass());
         MetaMethod throwEx = metaForClass.getMethod("throwEx").orElseGet(Assertions::fail);
 
@@ -81,25 +110,19 @@ public class ReflectiveTest {
         assertFalse(result.isOk());
     }
 
-
+    @Getter
+    @Setter
+    @AllArgsConstructor
     public static class Dummy {
-        private String name;
-
-        public Dummy(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return privateMethod()[0];
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void throwEx() throws Exception {
-           throw new Exception("something must have gone wrong");
-        }
+        private byte byteValue;
+        private short shortValue;
+        private int intValue;
+        private long longValue;
+        private float floatValue;
+        private double doubleValue;
+        private char charValue;
+        private boolean booleanValue;
+        private String stringValue;
 
         @Override
         public boolean equals(Object obj) {
@@ -111,8 +134,15 @@ public class ReflectiveTest {
             return 6;
         }
 
-        private String[] privateMethod() {
-            return new String[]{name, "bar"};
+        @SuppressWarnings("unused")
+        private String[] privateMethod(){
+            return new String[1];
         }
+
+        @SuppressWarnings("unused")
+        public void throwEx() {
+            throw new RuntimeException("ex");
+        }
+
     }
 }

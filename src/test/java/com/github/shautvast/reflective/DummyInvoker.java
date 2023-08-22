@@ -1,9 +1,10 @@
 package com.github.shautvast.reflective;
 
+@SuppressWarnings("ALL")
 public class DummyInvoker extends AbstractInvoker {
 
     public Object invoke(Object instance, Object... arguments) {
-        ((ReflectiveTest.Dummy) instance).setName((String)arguments[0]);
+        ((ReflectiveTest.Dummy) instance).setIntValue((int)arguments[0]);
         return null;
     }
 }

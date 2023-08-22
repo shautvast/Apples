@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.shautvast</groupId>
     <artifactId>reflective</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>reflective</name>
     <description>Reflective utils that don't use java.lang.reflect</description>
 
@@ -28,6 +28,12 @@
             <groupId>org.openjdk.jol</groupId>
             <artifactId>jol-core</artifactId>
             <version>0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.26</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
