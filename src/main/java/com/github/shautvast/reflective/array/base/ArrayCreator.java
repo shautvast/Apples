@@ -1,4 +1,4 @@
-package com.github.shautvast.reflective.array;
+package com.github.shautvast.reflective.array.base;
 
 public abstract class ArrayCreator {
 

@@ -106,7 +106,6 @@ public class Java {
     }
 
     public static Class<?> toClass(String descriptor) {
-        System.out.println("desc;" + descriptor);
         try {
             if (descriptor.length() == 1) {
                 return mapIfPrimitive(descriptor.charAt(0));
@@ -126,7 +125,6 @@ public class Java {
             }
             type = Java.externalName(type);
             Class<?> aClass = Class.forName(dims + type);
-            System.out.println(aClass);
             return aClass;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -154,7 +152,6 @@ public class Java {
             case 'V':
                 return Void.class;
             default:
-                System.out.println("desc:" + descriptor);
                 return null;
         }
     }
@@ -184,5 +181,33 @@ public class Java {
                     throw new IllegalArgumentException(type + "?");
                 }
         }
+    }
+
+    public static int getNumDimensions(Class<?> arrayType) {
+       return getNumDimensions(arrayType.getName());
+    }
+
+    public static int getNumDimensions(String arrayName) {
+        int i = 0;
+        while (arrayName.charAt(i) == '[') {
+            i++;
+        }
+        return i;
+    }
+
+    public static String createArrayType(String componentType, int[] dimensions) {
+        StringBuilder s = new StringBuilder();
+        s.append("[".repeat(dimensions.length));
+        boolean isObject = !componentType.startsWith("[") && componentType.contains("/");
+        if (isObject) {
+            s.append("L");
+            s.append(componentType);
+        } else {
+            s.append(Java.mapPrimitiveOrArrayName(componentType));
+        }
+        if (isObject) {
+            s.append(";");
+        }
+        return s.toString();
     }
 }

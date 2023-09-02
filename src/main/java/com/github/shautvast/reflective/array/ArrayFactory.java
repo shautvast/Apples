@@ -1,24 +1,18 @@
 package com.github.shautvast.reflective.array;
 
-import com.github.shautvast.reflective.java.ASM;
-import com.github.shautvast.reflective.java.ByteClassLoader;
+import com.github.shautvast.reflective.array.base.*;
 import com.github.shautvast.reflective.java.Java;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.*;
 
-import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ARETURN;
 
 /**
- * Factory class for dynamically creating arrays
+ * Factory class for dynamically working with arrays
  */
 public class ArrayFactory {
 
-    private static final ConcurrentMap<String, ArrayCreator> cache = new ConcurrentHashMap<>();
+    private static final Map<String, ArrayCreator> creatorCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Map<String, Object>> setterCache = new ConcurrentHashMap<>();
 
     /**
      * Creates a new array of the specified type and dimensions
@@ -27,69 +21,127 @@ public class ArrayFactory {
      * @param dimensions  array of ints, ie {10} means 1 dimension, length 10. {10,20} means 2 dimensions, size 10 by 20
      * @return an object that you can cast to the expected array type
      */
-    public static Object newArray(Class<?> elementType, int... dimensions) {
+    public static Object newInstance(Class<?> elementType, int... dimensions) {
+        return getCreatorInstance(elementType, dimensions).newInstance();
+    }
+
+    /**
+     * Sets an Object value on an array
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, Object value) {
+        getSetterInstance(ObjectArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    /**
+     * Sets an int value on an array
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, int value) {
+        getSetterInstance(IntArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    /**
+     * Sets a byte value on an array
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, byte value) {
+        getSetterInstance(ByteArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    /**
+     * Sets a short value on an array
+     *
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, short value) {
+        getSetterInstance(ShortArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    /**
+     * Sets a long value on an array
+     *
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, long value) {
+        getSetterInstance(LongArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    /**
+     * Sets a byte value on an array
+     *
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, float value) {
+        getSetterInstance(FloatArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    /**
+     * Sets a double value on an array
+     *
+     * @param array the array on which the value is set
+     * @param index the array index
+     * @param value the value to set
+     */
+    public static void set(Object array, int index, double value) {
+        getSetterInstance(DoubleArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    public static void set(Object array, int index, char value) {
+        getSetterInstance(CharArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    public static void set(Object array, int index, boolean value) {
+        getSetterInstance(BooleanArraySetter.class, typeChecked(array)).set(array, index, value);
+    }
+
+    private static Class<?> typeChecked(Object array) {
+        Class<?> arrayType = array.getClass();
+        if (!arrayType.isArray()) {
+            throw new IllegalArgumentException("This is not an array");
+        }
+        return arrayType;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getSetterInstance(Class<T> setterBaseType, Class<?> arrayType) {
+        String arrayTypeName = Java.internalName(arrayType);
+        String syntheticClassName = getSyntheticClassName(arrayType, arrayTypeName);
+
+        return (T) setterCache.computeIfAbsent(setterBaseType, k -> new ConcurrentHashMap<>()).
+                computeIfAbsent(syntheticClassName,
+                        k -> AsmArrayFactory.createSyntheticArraySetter(setterBaseType, arrayTypeName, syntheticClassName));
+    }
+
+    private static String getSyntheticClassName(Class<?> arrayType, String arrayTypeName) {
+        return "com/shautvast/reflective/array/ArraySetter_"
+                + javaName(arrayTypeName) + Java.getNumDimensions(arrayType);
+    }
+
+    private static ArrayCreator getCreatorInstance(Class<?> elementType, int... dimensions) {
         String elementTypeName = Java.internalName(elementType);
-        String syntheticClassName = syntheticClassName(elementTypeName, dimensions);
+        String syntheticClassName = "com/shautvast/reflective/array/ArrayCreator_"
+                + javaName(elementTypeName) + dimensions.length;
 
-        return cache.computeIfAbsent(syntheticClassName,
-                k -> createSyntheticArrayCreator(elementTypeName, syntheticClassName, dimensions)).newInstance();
+        return creatorCache.computeIfAbsent(syntheticClassName,
+                k -> AsmArrayFactory.createSyntheticArrayCreator(elementTypeName, syntheticClassName, dimensions));
     }
 
-    private static String syntheticClassName(String elementTypeName, int[] dimensions) {
-        return "RAC" + elementTypeName
+    private static String javaName(String arrayTypeName) {
+        return arrayTypeName
                 .replaceAll("[/.\\[;]", "")
-                .toLowerCase() + "L" + dimensions.length;
+                .toLowerCase();
     }
-
-    private static ArrayCreator createSyntheticArrayCreator(String componentType, String name, int... dimensions) {
-        ClassNode classNode = createASMClassNode(componentType, name, dimensions);
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        classNode.accept(classWriter);
-
-        byte[] byteArray = classWriter.toByteArray();
-
-//        try (FileOutputStream out = new FileOutputStream(name + ".class")) {
-//            out.write(byteArray);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-        ByteClassLoader.INSTANCE.addClass(classNode.name, byteArray);
-
-        try {
-            return (ArrayCreator) (ByteClassLoader.INSTANCE.loadClass(classNode.name).getConstructor().newInstance());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static ClassNode createASMClassNode(String componentType, String name, int[] dimensions) {
-        ClassNode classNode = ASM.createDefaultClassNode(name,
-                Java.internalName(ArrayCreator.class));
-        MethodNode methodNode = new MethodNode(ACC_PUBLIC,
-                "newInstance", "()Ljava/lang/Object;", null, null);
-        classNode.methods.add(methodNode);
-        InsnList insns = methodNode.instructions;
-        Arrays.stream(dimensions).forEach(d -> insns.add(new LdcInsnNode(d)));
-        insns.add(new MultiANewArrayInsnNode(createArrayType(componentType, dimensions), dimensions.length));
-        insns.add(new InsnNode(ARETURN));
-        return classNode;
-    }
-
-    private static String createArrayType(String componentType, int[] dimensions) {
-        StringBuilder s = new StringBuilder();
-        s.append("[".repeat(dimensions.length));
-        boolean isObject = !componentType.startsWith("[") && componentType.contains("/");
-        if (isObject) {
-            s.append("L");
-            s.append(componentType);
-        } else {
-            s.append(Java.mapPrimitiveOrArrayName(componentType));
-        }
-        if (isObject) {
-            s.append(";");
-        }
-        return s.toString();
-    }
-
 }

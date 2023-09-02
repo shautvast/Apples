@@ -61,7 +61,6 @@ public class InvokerFactory {
             // put argument on the stack
             insns.add(new InsnNode(AALOAD));
             String type = internalName(mapPrimitiveToWrapper(method.getParameters().get(i).getType()).getName());
-            System.out.println("--" + type);
             insns.add(new TypeInsnNode(CHECKCAST, type));
             unwrapPrimitive(method.getParameters().get(i), insns);
         }
@@ -164,7 +163,6 @@ public class InvokerFactory {
     }
 
     private static Class<?> mapPrimitiveToWrapper(Class<?> type) {
-        System.out.println(type);
         if (type == int.class) {
             return Integer.class;
         } else if (type == byte.class) {
