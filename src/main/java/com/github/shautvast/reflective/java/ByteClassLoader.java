@@ -23,7 +23,7 @@ public class ByteClassLoader extends ClassLoader {
     }
 
     public void addClass(String name, byte[] bytecode) {
-        Class<?> classDef = defineClass(name, bytecode, 0, bytecode.length);
+        Class<?> classDef = defineClass(null, bytecode, 0, bytecode.length);
         classes.put(name, classDef);
     }
 

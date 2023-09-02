@@ -44,7 +44,7 @@ public class MetaClass {
     }
 
     void addField(int access, String name, String descriptor) {
-        fields.put(name, new MetaField(name, access)); //ASM access same as reflect modifiers?
+        fields.put(name, new MetaField(name, access, Java.toClass(descriptor))); //ASM access same as reflect modifiers?
     }
 
     public void addMethod(int access, String name, String descriptor) {
@@ -62,4 +62,6 @@ public class MetaClass {
     public String getRawName() {
         return rawName;
     }
+
+
 }

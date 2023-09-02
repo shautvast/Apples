@@ -18,7 +18,7 @@ public class ReflectiveTest {
 
     @Test
     void testMethods() {
-        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
+        Dummy dummy = getDummy();
         MetaClass metaDummy = Reflective.getMetaClass(dummy.getClass());
         assertEquals("com.github.shautvast.reflective.ReflectiveTest$Dummy", metaDummy.getName());
 
@@ -49,7 +49,7 @@ public class ReflectiveTest {
 
     @Test
     void testInvokeGetter() {
-        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
+        Dummy dummy = getDummy();
         MetaMethod getStringValue = Reflective.getMetaClass(dummy.getClass()).getMethod("getStringValue").orElseGet(Assertions::fail);
 
         // passing "foo" as the instance is not allowed
@@ -60,7 +60,7 @@ public class ReflectiveTest {
 
     @Test
     void testInvokeSetters() {
-        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
+        Dummy dummy = getDummy();
         MetaClass metaForClass = Reflective.getMetaClass(dummy.getClass());
 
         MetaMethod setByte = metaForClass.getMethod("setByteValue").orElseGet(Assertions::fail);
@@ -102,12 +102,19 @@ public class ReflectiveTest {
 
     @Test
     void testInvocationExceptionHappened() {
-        Dummy dummy = new Dummy((byte) 42, (short) 43, 44, 45, 46.0F, 47.0, 'D', true, "don't panic!");
+        Dummy dummy = getDummy();
         MetaClass metaForClass = Reflective.getMetaClass(dummy.getClass());
         MetaMethod throwEx = metaForClass.getMethod("throwEx").orElseGet(Assertions::fail);
 
         Result<Void> result = throwEx.invoke(dummy, "foo");
         assertFalse(result.isOk());
+    }
+
+    private static Dummy getDummy() {
+        return new Dummy((byte) 42, (short) 43,
+                44, 45, 46.0F, 47.0,
+                'D', true, "don't panic!",
+                new byte[1][1], new String[]{"Please don't touch that button"});
     }
 
     @Getter
@@ -123,6 +130,8 @@ public class ReflectiveTest {
         private char charValue;
         private boolean booleanValue;
         private String stringValue;
+        private byte[][] byteArrayValue;
+        private String[] stringArrayValue;
 
         @Override
         public boolean equals(Object obj) {
@@ -135,7 +144,7 @@ public class ReflectiveTest {
         }
 
         @SuppressWarnings("unused")
-        private String[] privateMethod(){
+        private String[] privateMethod() {
             return new String[1];
         }
 

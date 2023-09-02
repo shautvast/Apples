@@ -5,9 +5,12 @@ public class MetaField {
     private final String name;
     private final int modifiers;
 
-    public MetaField(String name, int modifiers) {
+    private final Class<?> type;
+
+    public MetaField(String name, int modifiers, Class<?> type) {
         this.name = name;
         this.modifiers = modifiers;
+        this.type = type;
     }
 
     public String getName() {

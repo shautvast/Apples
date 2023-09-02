@@ -78,13 +78,13 @@ public class MetaMethod {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < parms.length(); i++) {
             String t = Character.toString(parms.charAt(i));
-            if (!"L".equals(t) && buf.length() == 0) {
-                mutableParams.add(new Parameter<>(Java.getClassFromDescriptor(t), t));
+            if (!"[".equals(t) && !"L".equals(t) && buf.length() == 0) {
+                mutableParams.add(new Parameter<>(Java.toClass(t), t));
             }
             if (";".equals(t)) {
                 buf.append(t);
                 String desc = buf.toString();
-                mutableParams.add(new Parameter<>(Java.getClassFromDescriptor(desc), correct(desc)));
+                mutableParams.add(new Parameter<>(Java.toClass(desc), correct(desc)));
                 buf = new StringBuilder();
             } else {
                 buf.append(t);
@@ -93,7 +93,7 @@ public class MetaMethod {
 
         String returnDesc = split[2];
         this.returnParameter = new Parameter<>(
-                Java.getClassFromDescriptor(returnDesc),
+                Java.toClass(returnDesc),
                 correct(returnDesc));
 
         return Collections.unmodifiableList(mutableParams);

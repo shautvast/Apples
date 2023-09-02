@@ -4,8 +4,6 @@ import org.objectweb.asm.ClassReader;
 
 import java.io.IOException;
 
-import static java.lang.reflect.Array.newInstance;
-
 /*
  * common utils not for external use
  */
@@ -107,49 +105,84 @@ public class Java {
         throw new RuntimeException();
     }
 
-    public static Class<?> getClassFromDescriptor(String descriptor) {
-        int arrayDims = 0;
-        while (descriptor.startsWith("[")) {
-            arrayDims++;
-            descriptor = descriptor.substring(1);
-        } //could be cheaper
+    public static Class<?> toClass(String descriptor) {
+        System.out.println("desc;" + descriptor);
+        try {
+            if (descriptor.length() == 1) {
+                return mapIfPrimitive(descriptor.charAt(0));
+            }
+            if (!descriptor.startsWith("[") && descriptor.endsWith(";")) {
+                descriptor = descriptor.substring(0, descriptor.length() - 1);
+            }
+            int i = 0;
+            while (descriptor.charAt(i) == '[' && i < 256) {
+                i++;
+            }
+            assert i < 256;
+            String dims = descriptor.substring(0, i);
+            String type = descriptor.substring(i);
+            if (i == 0 && type.startsWith("L")) {
+                type = type.substring(1);
+            }
+            type = Java.externalName(type);
+            Class<?> aClass = Class.forName(dims + type);
+            System.out.println(aClass);
+            return aClass;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        if (descriptor.startsWith("L") && descriptor.endsWith(";")) {
-            try {
-                String className = descriptor.substring(1, descriptor.length() - 1).replaceAll("/", ".");
-                Class<?> clazz = Class.forName(className);
-                if (arrayDims > 0) {
-                    clazz = newInstance(clazz, new int[arrayDims]).getClass();
+    private static Class<?> mapIfPrimitive(char descriptor) {
+        switch (descriptor) {
+            case 'B':
+                return byte.class;
+            case 'S':
+                return short.class;
+            case 'I':
+                return int.class;
+            case 'J':
+                return long.class;
+            case 'F':
+                return float.class;
+            case 'D':
+                return double.class;
+            case 'C':
+                return char.class;
+            case 'Z':
+                return boolean.class;
+            case 'V':
+                return Void.class;
+            default:
+                System.out.println("desc:" + descriptor);
+                return null;
+        }
+    }
+
+    public static String mapPrimitiveOrArrayName(String type) {
+        switch (type) {
+            case "byte":
+                return "B";
+            case "short":
+                return "S";
+            case "int":
+                return "I";
+            case "long":
+                return "J";
+            case "float":
+                return "F";
+            case "double":
+                return "D";
+            case "char":
+                return "C";
+            case "boolean":
+                return "Z";
+            default:
+                if (type.startsWith("[") || type.contains("/")) {
+                    return type;
+                } else {
+                    throw new IllegalArgumentException(type + "?");
                 }
-                return clazz;
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e); // not supposed to happen
-            }
-        } else {
-            char typeChar = descriptor.charAt(0);
-            boolean isArray = arrayDims != 0;
-            switch (typeChar) {
-                case 'B':
-                    return isArray ? newInstance(byte.class, new int[arrayDims]).getClass() : byte.class;
-                case 'C':
-                    return isArray ? newInstance(char.class, new int[arrayDims]).getClass() : char.class;
-                case 'D':
-                    return isArray ? newInstance(double.class, new int[arrayDims]).getClass() : double.class;
-                case 'F':
-                    return isArray ? newInstance(float.class, new int[arrayDims]).getClass() : float.class;
-                case 'I':
-                    return isArray ? newInstance(int.class, new int[arrayDims]).getClass() : int.class;
-                case 'J':
-                    return isArray ? newInstance(long.class, new int[arrayDims]).getClass() : long.class;
-                case 'S':
-                    return isArray ? newInstance(short.class, new int[arrayDims]).getClass() : short.class;
-                case 'Z':
-                    return isArray ? newInstance(boolean.class, new int[arrayDims]).getClass() : boolean.class;
-                case 'V':
-                    return Void.class;
-                default:
-                    throw new RuntimeException(new ClassNotFoundException("unknown descriptor: " + descriptor)); //must not happen
-            }
         }
     }
 }

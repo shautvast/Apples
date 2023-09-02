@@ -7,6 +7,8 @@ import com.github.shautvast.rusty.Result;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import static com.github.shautvast.reflective.java.Java.DOUBLE;
@@ -58,7 +60,9 @@ public class InvokerFactory {
             }
             // put argument on the stack
             insns.add(new InsnNode(AALOAD));
-            insns.add(new TypeInsnNode(CHECKCAST, Java.internalName(mapPrimitiveToWrapper(method.getParameters().get(i).getType()).getName())));
+            String type = internalName(mapPrimitiveToWrapper(method.getParameters().get(i).getType()).getName());
+            System.out.println("--" + type);
+            insns.add(new TypeInsnNode(CHECKCAST, type));
             unwrapPrimitive(method.getParameters().get(i), insns);
         }
         // call the method
@@ -76,11 +80,11 @@ public class InvokerFactory {
         classNode.accept(classWriter);
         byte[] byteArray = classWriter.toByteArray();
 
-//        try (FileOutputStream out = new FileOutputStream("C"+method.getName() + ".class")) {
-//            out.write(byteArray);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try (FileOutputStream out = new FileOutputStream(method.getMetaClass().getName() + "_" + method.getName() + ".class")) {
+            out.write(byteArray);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // load it into the JVM
         ByteClassLoader.INSTANCE.addClass(className, byteArray);
@@ -160,6 +164,7 @@ public class InvokerFactory {
     }
 
     private static Class<?> mapPrimitiveToWrapper(Class<?> type) {
+        System.out.println(type);
         if (type == int.class) {
             return Integer.class;
         } else if (type == byte.class) {
