@@ -156,6 +156,13 @@ public class Java {
         }
     }
 
+    /* strips all disallowed characters from a classname */
+    public static String javaName(String arrayTypeName) {
+        return arrayTypeName
+                .replaceAll("[/.\\[;]", "")
+                .toLowerCase();
+    }
+
     public static String mapPrimitiveOrArrayName(String type) {
         switch (type) {
             case "byte":
